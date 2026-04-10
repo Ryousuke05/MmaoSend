@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>猫猫传送~</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+</head>
+
+<body>
+    <div class="card" style="position: relative; overflow: hidden;">
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <div id="upload-info">
+            <span id="time-left">--:--</span>
+        </div>
+
+        <h2>传送文件</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label class="btn">
+                选择文件
+                <input type="file" name="files" multiple id="fileInput">
+            </label>
+            <div id="list" style="margin-top: 10px; font-size: 14px; color: #555; text-align: left; max-height: 100px; overflow-y: auto;"></div>
+            <button type="submit" class="submit" id="submitBtn">发送文件</button>
+        </form>
+
+        <div class="text-msg-container">
+            <input id="textInput" placeholder="输入消息...">
+            <button id="sendTextBtn" class="submit">发送消息</button>
+        </div>
+
+        <div id="status-msg" class="msg">{{msg|safe}}</div>
+
+        <div class="received-files-container">
+            <h3 style="margin-bottom: 10px; font-size: 16px; color: #000; text-align: center;">接收的内容</h3>
+            <ul id="pc-files" style="padding: 0; list-style: none;">
+            </ul>
+        </div>
+
+        <footer
+            style="margin-top: 30px; font-size: 12px; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+            <p>© 2025-2026 Ryousuke. All rights reserved.</p>
+            <p style="color: #888;">
+                GitHub：<a href="https://github.com/Ryousuke05/MmaoSend/" target="_blank"
+                    style="color: #888; text-decoration: none;">https://github.com/Ryousuke05/MmaoSend/</a><br>
+                网站：<a href="https://ciallovo.top/" target="_blank"
+                    style="color: #888; text-decoration: none;">https://ciallovo.top/</a>
+            </p>
+        </footer>
+    </div>
+    <script>
+        const pcFiles = document.getElementById('pc-files');
+        const token = window.location.pathname.split('/').pop();
+        const uploadForm = document.getElementById('uploadForm');
+        const progressBar = document.getElementById('progress-bar');
+        const progressContainer = document.getElementById('progress-container');
+        const timeLeftSpan = document.getElementById('time-left');
+        const uploadInfo = document.getElementById('upload-info');
+        const statusMsg = document.getElementById('status-msg');
+        const submitBtn = document.getElementById('submitBtn');
+        const textInput = document.getElementById('textInput');
+        const sendTextBtn = document.getElementById('sendTextBtn');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('list');
+
+        fileInput.addEventListener('change', () => {
+            let html = '';
+            for (let f of fileInput.files) {
+                html += `<div>${f.name}</div>`;
+            }
+            fileList.innerHTML = html;
+        });
+
+        sendTextBtn.onclick = async () => {
+            const text = textInput.value.trim();
+            if (!text) return;
+
+            sendTextBtn.disabled = true;
+            sendTextBtn.style.opacity = '0.5';
+            statusMsg.innerHTML = '正在发送...';
+
+            try {
+                const res = await fetch('/api/send_text/' + token, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                if (res.ok) {
+                    statusMsg.innerHTML = '发送成功！';
+                    textInput.value = '';
+                } else {
+                    statusMsg.innerHTML = '发送失败';
+                }
+            } catch (err) {
+                statusMsg.innerHTML = '发送出错';
+            } finally {
+                setTimeout(() => {
+                    sendTextBtn.disabled = false;
+                    sendTextBtn.style.opacity = '1';
+                }, 1500);
+            }
+        };
+
+        uploadForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const files = document.getElementById('fileInput').files;
+            if (!files.length) return;
+
+            const formData = new FormData();
+            for (let f of files) formData.append('files', f);
+
+            progressContainer.style.display = 'block';
+            uploadInfo.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            statusMsg.innerHTML = '正在上传...';
+
+            const xhr = new XMLHttpRequest();
+            const startTime = Date.now();
+
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percent = (event.loaded / event.total) * 100;
+                    progressBar.style.width = percent + '%';
+
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    const speed = event.loaded / elapsed;
+                    const remaining = (event.total - event.loaded) / speed;
+
+                    if (speed > 0) {
+                        const minutes = Math.floor(remaining / 60);
+                        const seconds = Math.floor(remaining % 60);
+                        timeLeftSpan.innerText = minutes + ':' + seconds.toString().padStart(2, '0');
+                    }
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    statusMsg.innerHTML = '上传成功！';
+                    document.getElementById('fileInput').value = '';
+                    document.getElementById('list').innerHTML = '';
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        uploadInfo.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                    }, 2000);
+                } else {
+                    statusMsg.innerHTML = '上传失败';
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                }
+            };
+
+            xhr.open('POST', '/upload/' + token);
+            xhr.send(formData);
+        };
+
+        async function fetchPcFiles() {
+            try {
+                const res = await fetch('/api/phone_files/' + token);
+                const data = await res.json();
+                const files = data.files || [];
+                const texts = data.texts || [];
+
+                if (files.length === 0 && texts.length === 0) {
+                    pcFiles.innerHTML = '<li style="padding: 10px; color: #666; font-size: 14px; text-align: center;">暂无电脑内容</li>';
+                    return;
+                }
+
+                let html = '';
+                texts.forEach(t => {
+                    const escapedContent = t.content.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, "\\n");
+                    html += '<li style="padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; background: #fafafa; border-radius: 8px; margin-bottom: 5px; list-style:none; display: flex; align-items: center; justify-content: space-between;">';
+                    html += '<div style="word-break: break-all; color: #666; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; flex: 1;">' + t.content + '</div>';
+                    html += '<button onclick="copyToClipboard(\'' + escapedContent + '\', this)" style="background: transparent; border: none; padding: 6px 12px; font-size: 12px; cursor: pointer; color: #444; flex-shrink: 0;">复制</button>';
+                    html += '</li>';
+                });
+                files.forEach(f => {
+                    html += '<li style="padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; background: #fff; border-radius: 8px; margin-bottom: 5px; list-style:none; display: flex; align-items: center; justify-content: space-between;">';
+                    html += '<div style="word-break: break-all; color: #666; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; flex: 1;">文件: ' + f + '</div>';
+                    html += '<a href="/download/' + token + '/' + encodeURIComponent(f) + '" style="background: transparent; border: none; padding: 6px 12px; font-size: 12px; cursor: pointer; color: #444; flex-shrink: 0; text-decoration: none;">下载</a>';
+                    html += '</li>';
+                });
+                pcFiles.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function copyToClipboard(text, btn) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+
+            const oldText = btn.innerText;
+            btn.innerText = '已复制';
+            btn.style.color = 'green';
+            setTimeout(() => {
+                btn.innerText = oldText;
+                btn.style.color = '#555';
+            }, 2000);
+        }
+
+        setInterval(fetchPcFiles, 3000);
+        fetchPcFiles();
+    </script>
+</body>
+
+</html>

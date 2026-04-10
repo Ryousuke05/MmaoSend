@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>猫猫传送~</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/qr.css') }}">
+</head>
+
+<body>
+    <div class="card" style="position: relative; overflow: hidden;">
+        <div id="pc-progress-container">
+            <div id="pc-progress-bar"></div>
+        </div>
+
+        <h2>用手机扫码上传</h2>
+
+        <div style="margin-bottom: 15px;">
+            <select id="ip-select">
+                {% for ip in ips %}
+                <option value="{{ ip }}">{{ ip }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="qr-container">
+            <img id="qr-img" src="">
+        </div>
+
+        <div id="drop-zone">
+            <span id="drop-text">拖放文件传给手机 或 点击选择</span>
+            <div id="pc-time-info">
+                预计剩余时间: <span id="pc-time-left">--:--</span>
+            </div>
+            <input type="file" id="pc-file" multiple style="display: none;">
+        </div>
+
+        <div style="margin-top: 20px; display: flex; align-items: center; gap: 8px;">
+            <input id="pcTextInput" placeholder="输入消息..." style="flex: 1; height: 46px; padding: 0 12px; border: 1px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 14px; outline: none; background: #fff; display: block;">
+            <button id="pcSendTextBtn" style="margin-top: 0; width: auto; padding: 0 15px; height: 46px; white-space: nowrap; flex-shrink: 0; background: #eee; color: #333; border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 600;">发送消息</button>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <h3 style="font-size: 16px; margin-bottom: 10px; color: #000; text-align: center;">收到的文件</h3>
+            <ul id="received-list" style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto; text-align: left; border: 1px solid #eee; border-radius: 8px;">
+                <li style="padding: 10px; color: #666; text-align: center;">暂无内容</li>
+            </ul>
+        </div>
+
+        <footer
+            style="margin-top: 30px; font-size: 12px; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+            <p>© 2025-2026 Ryousuke. All rights reserved.</p>
+            <p style="color: #888;">
+                GitHub：<a href="https://github.com/Ryousuke05/MmaoSend/" target="_blank"
+                    style="color: #888; text-decoration: none;">https://github.com/Ryousuke05/MmaoSend/</a><br>
+                网站：<a href="https://ciallovo.top/" target="_blank"
+                    style="color: #888; text-decoration: none;">https://ciallovo.top/</a>
+            </p>
+        </footer>
+
+        <script>
+            const dropZone = document.getElementById('drop-zone');
+            const pcFile = document.getElementById('pc-file');
+            const pcProgressBar = document.getElementById('pc-progress-bar');
+            const pcProgressContainer = document.getElementById('pc-progress-container');
+            const pcTimeLeft = document.getElementById('pc-time-left');
+            const pcTimeInfo = document.getElementById('pc-time-info');
+            const qrImg = document.getElementById('qr-img');
+            const ipSelect = document.getElementById('ip-select');
+            const pcTextInput = document.getElementById('pcTextInput');
+            const pcSendTextBtn = document.getElementById('pcSendTextBtn');
+
+            function updateQR() {
+                const ip = ipSelect.value;
+                const url = "http://" + ip + ":{{ port }}/upload/{{ upload_token }}";
+                qrImg.src = "/api/qr?data=" + encodeURIComponent(url);
+            }
+
+            ipSelect.onchange = updateQR;
+            updateQR();
+
+            pcSendTextBtn.onclick = async () => {
+                const text = pcTextInput.value.trim();
+                if (!text) return;
+
+                pcSendTextBtn.disabled = true;
+                try {
+                    const res = await fetch('/api/pc_send_text/{{ token }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text })
+                    });
+                    if (res.ok) {
+                        pcTextInput.value = '';
+                    }
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    pcSendTextBtn.disabled = false;
+                }
+            };
+
+            dropZone.onclick = () => pcFile.click();
+
+            pcFile.onchange = (e) => {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    uploadFiles(files);
+                }
+            };
+
+            dropZone.ondragover = (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            };
+
+            dropZone.ondragleave = () => {
+                dropZone.classList.remove('dragover');
+            };
+
+            dropZone.ondrop = (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    uploadFiles(files);
+                }
+            };
+
+            function uploadFiles(files) {
+                const formData = new FormData();
+                for (let f of files) {
+                    formData.append('files', f);
+                }
+
+                pcProgressContainer.style.display = 'block';
+                pcTimeInfo.style.display = 'block';
+
+                const xhr = new XMLHttpRequest();
+                const startTime = Date.now();
+
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        const percent = (event.loaded / event.total) * 100;
+                        pcProgressBar.style.width = percent + '%';
+
+                        const elapsed = (Date.now() - startTime) / 1000;
+                        const speed = event.loaded / elapsed;
+                        const remaining = (event.total - event.loaded) / speed;
+
+                        if (speed > 0) {
+                            const minutes = Math.floor(remaining / 60);
+                            const seconds = Math.floor(remaining % 60);
+                            pcTimeLeft.innerText = minutes + ":" + seconds.toString().padStart(2, '0');
+                        }
+                    }
+                };
+
+                xhr.onload = () => {
+                    pcProgressContainer.style.display = 'none';
+                    pcTimeInfo.style.display = 'none';
+                    pcProgressBar.style.width = '0%';
+                    if (xhr.status === 200) {
+                        pcFile.value = '';
+                    } else {
+                        alert('上传失败');
+                    }
+                };
+
+                xhr.open('POST', '/api/pc_upload/{{ token }}');
+                xhr.send(formData);
+            }
+
+            setInterval(async () => {
+                try {
+                    await fetch('/api/heartbeat/{{ token }}');
+                } catch (e) { }
+            }, 5000);
+
+            async function fetchReceivedFiles() {
+                try {
+                    const res = await fetch('/api/files/{{ token }}');
+                    const data = await res.json();
+                    const list = document.getElementById('received-list');
+                    let html = '';
+                    
+                    if (data.texts && data.texts.length > 0) {
+                        data.texts.forEach(t => {
+                            html += `<li style="padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; background: #fafafa; border-radius: 8px; margin-bottom: 5px; list-style:none; display: flex; align-items: center; justify-content: space-between;">`;
+                            html += `<div style="word-break: break-all; font-weight: 500; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; flex: 1;">${t.content}</div>`;
+                            html += `<button onclick="copyToClipboard('${t.content.replace(/'/g, "\\'")}', this)" style="padding: 6px 12px; font-size: 12px; cursor: pointer; background: transparent; border: none; color: #444; flex-shrink: 0;">复制</button>`;
+                            html += `</li>`;
+                        });
+                    }
+
+                    if (data.files && data.files.length > 0) {
+                        data.files.forEach(f => {
+                            html += `<li style="padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; background: #fff; border-radius: 8px; margin-bottom: 5px; list-style:none; display: flex; align-items: center; justify-content: space-between;">`;
+                            html += `<div style="word-break: break-all; color: #666; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; flex: 1;">文件: ${f}</div>`;
+                            html += `<button onclick="openFile('${f}')" style="padding: 6px 12px; font-size: 12px; cursor: pointer; background: transparent; border: none; color: #444; flex-shrink: 0;">打开位置</button>`;
+                            html += `</li>`;
+                        });
+                    }
+
+                    if (!html) {
+                        list.innerHTML = '<li style="padding: 10px; color: #666; text-align: center;">暂无手机内容</li>';
+                    } else {
+                        list.innerHTML = html;
+                    }
+                } catch (e) {}
+            }
+
+            async function openFile(filename) {
+                await fetch('/open_file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename })
+                });
+            }
+
+            function copyToClipboard(text, btn) {
+                const temp = document.createElement('textarea');
+                temp.value = text;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+                const old = btn.innerText;
+                btn.innerText = '已复制';
+                setTimeout(() => btn.innerText = old, 1000);
+            }
+
+            setInterval(fetchReceivedFiles, 3000);
+            fetchReceivedFiles();
+        </script>
+    </div>
+</body>
+
+</html>

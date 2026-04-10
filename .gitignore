@@ -1,0 +1,10 @@
+build/
+dist/
+*.spec
+logs.txt
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+wuxiao.txt
+pack.bat

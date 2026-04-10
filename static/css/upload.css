@@ -1,0 +1,156 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f5;
+    text-align: center;
+    padding: 15px;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+}
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    margin: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+}
+input { display: none; }
+.btn {
+    background: #eee;
+    padding: 16px;
+    border-radius: 12px;
+    display: block;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    user-select: none;
+    transition: background 0.2s;
+}
+.btn:active {
+    background: #ddd;
+}
+.submit {
+    width: 100%;
+    margin-top: 15px;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #ddd;
+    color: black;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: opacity 0.2s;
+}
+.submit:active {
+    opacity: 0.85;
+}
+.msg {
+    margin-top: 15px;
+    color: green;
+    word-break: break-all;
+    font-size: 14px;
+}
+#pc-files {
+    max-height: 45vh !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+#progress-container {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: #eee;
+    z-index: 10;
+}
+
+#progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #666;
+    transition: width 0.2s;
+}
+
+#upload-info {
+    display: none;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 10px;
+    text-align: right;
+}
+
+.text-msg-container {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#textInput {
+    flex: 1;
+    height: 46px;
+    padding: 0 12px;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    box-sizing: border-box;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    display: block;
+}
+
+#sendTextBtn {
+    margin-top: 0;
+    width: auto !important;
+    padding: 0 15px;
+    height: 46px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    background: #eee;
+    color: #333;
+}
+
+.received-files-container {
+    margin-top: 30px;
+    text-align: left;
+}
+
+#pc-files {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+#pc-files li {
+    background: #fff;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.05);
+}
+@media (max-width: 320px) {
+    .card {
+        padding: 16px;
+    }
+    h2 {
+        font-size: 1.2rem;
+    }
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+    body {
+        padding-bottom: calc(15px + env(safe-area-inset-bottom));
+        padding-top: calc(15px + env(safe-area-inset-top));
+    }
+}

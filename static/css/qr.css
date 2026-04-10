@@ -1,0 +1,155 @@
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f5f5f5;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-sizing: border-box;
+}
+img {
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+}
+#file-list {
+    max-height: 30vh !important;
+}
+
+#pc-progress-container {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: #eee;
+    z-index: 10;
+}
+
+#pc-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #007bff;
+    transition: width 0.2s;
+}
+
+#ip-select {
+    color: gray;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    outline: none;
+}
+
+#qr-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+}
+
+#qr-img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+}
+
+#drop-zone {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px dashed #ccc;
+    border-radius: 8px;
+    color: gray;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 14px;
+    word-break: break-all;
+}
+
+#pc-time-info {
+    display: none;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+#pcTextInput {
+    width: 100%;
+    height: 60px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 13px;
+    outline: none;
+    resize: none;
+    background: #fff;
+}
+
+#pcSendTextBtn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #eee;
+    color: #333;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.file-list-container {
+    margin-top: 20px;
+    text-align: left;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.file-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.open-folder-btn {
+    color: gray;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+}
+
+#file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+@media (max-width: 350px) {
+    .card {
+        padding: 15px;
+    }
+    h2 {
+        font-size: 1.2rem;
+    }
+}
