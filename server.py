@@ -1,8 +1,5 @@
 import sys
 import os
-import hashlib
-import hmac
-import datetime
 import socket
 import time
 import logging
@@ -64,6 +61,14 @@ def check_heartbeat():
     global last_heartbeat
     while True:
         if time.time() - last_heartbeat > 8:
+            try:
+                if os.path.exists(SEND_TO_PHONE_DIR):
+                    for f in os.listdir(SEND_TO_PHONE_DIR):
+                        path = os.path.join(SEND_TO_PHONE_DIR, f)
+                        if os.path.isfile(path):
+                            os.remove(path)
+            except Exception as e:
+                logging.error(f"{e}")
             os._exit(0)
         time.sleep(1)
 
