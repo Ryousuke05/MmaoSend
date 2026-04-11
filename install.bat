@@ -44,14 +44,13 @@ if %errorlevel% neq 0 (
     exit
 )
 
-:INSTALL_DEPS
 
 echo.
 echo 安装依赖...
 
 python -m pip install --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-python -m pip install flask qrcode pillow -i https://pypi.tuna.tsinghua.edu.cn/simple
+python -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 if %errorlevel% neq 0 (
     echo 依赖安装失败
