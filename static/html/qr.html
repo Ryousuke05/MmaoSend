@@ -49,6 +49,10 @@
             </ul>
         </div>
 
+        <div id="status-msg" style="margin-top: 10px; text-align: center; color: #ff4444; font-weight: bold; display: none;">
+            出现了一点问题，请尝试重启程序喵~
+        </div>
+
         <footer
             style="margin-top: 30px; font-size: 12px; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
             <p>© 2025-2026 Ryousuke. All rights reserved.</p>
@@ -175,9 +179,13 @@
 
             setInterval(async () => {
                 try {
-                    await fetch('/api/heartbeat/{{ token }}');
-                } catch (e) { }
-            }, 5000);
+                    const resp = await fetch('/api/heartbeat/{{ token }}');
+                    if (!resp.ok) throw new Error();
+                    document.getElementById('status-msg').style.display = 'none';
+                } catch (e) {
+                    document.getElementById('status-msg').style.display = 'block';
+                }
+            }, 3000);
 
             async function fetchReceivedFiles() {
                 try {

@@ -218,6 +218,10 @@ def open_folder():
             return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 404
 
+@app.route("/api/status")
+def api_status():
+    return jsonify({"status": "ok"})
+
 @app.route("/api/qr")
 def qr_img():
     data = request.args.get("data", "")

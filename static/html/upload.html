@@ -212,6 +212,23 @@
             }, 2000);
         }
 
+        setInterval(async () => {
+            try {
+                const resp = await fetch('/api/status');
+                if (!resp.ok) throw new Error();
+                if (statusMsg.innerText === '出现了一点问题，请重新扫码喵~') {
+                    statusMsg.innerText = '';
+                    statusMsg.style.color = '';
+                    statusMsg.style.fontWeight = '';
+                }
+            } catch (e) {
+                statusMsg.style.display = 'block';
+                statusMsg.style.color = '#ff4444';
+                statusMsg.style.fontWeight = 'bold';
+                statusMsg.innerText = '出现了一点问题，请重新扫码喵~';
+            }
+        }, 3000);
+
         setInterval(fetchPcFiles, 3000);
         fetchPcFiles();
     </script>
